@@ -1,0 +1,11 @@
+aiohttp==3.10.3
+channels==4.1.0
+daphne==4.1.2
+Django==5.1
+django-cors-headers==4.4.0
+django-filter==24.3
+djangorestframework==3.15.2
+drf-redesign==0.4.0
+pillow==10.4.0
+python-dotenv==1.0.1
+huggingface-hub==0.24.6
