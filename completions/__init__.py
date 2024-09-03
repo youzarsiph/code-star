@@ -1,1 +1,1 @@
-""" CodeStar code completions """
+""" CodeStar CodeCompletions """

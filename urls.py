@@ -1,4 +1,4 @@
-""" URL Configuration for code_star """
+""" CodeStar URL Configuration """
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter

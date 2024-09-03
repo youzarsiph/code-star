@@ -33,11 +33,13 @@ jobs:
           cd mysite
           echo "INSTALLED_APPS += ['code_star', 'code_star.chats', 'code_star.completions', 'daphne', 'channels', 'rest_framework']" >> mysite/settings.py
 
-      - name: Configure URLConf
+      - name: Configure URLConf and Routing
         run: |
           cd mysite
           echo "from django.urls import include" >> mysite/urls.py
           echo "urlpatterns += [path('', include('code_star.urls'))]" >> mysite/urls.py
+          echo "from code_star.routing import app" >> mysite/asgi.py
+          echo "application = app(application)" >> mysite/asgi.py
 
       - name: Run Migrations, System checks and test
         run: |

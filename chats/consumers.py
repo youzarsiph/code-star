@@ -1,26 +1,36 @@
-""" Code completion consumers """
+""" Chat consumers """
 
-import json
 from typing import Dict
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from huggingface_hub import InferenceClient
+
 from code_star.chats.serializers import ChatSerializer
+from code_star.mixins import SerializerValidationMixin
 
 
 # Create your consumers here.
-class ChatConsumer(AsyncJsonWebsocketConsumer):
+class ChatConsumer(SerializerValidationMixin, AsyncJsonWebsocketConsumer):
     """Chat consumer"""
 
     client = InferenceClient()
+    serializer_class = ChatSerializer
     messages = [
         {
             "role": "system",
-            "content": """You are CodeStar, an advanced AI-powered coding assistant designed to enhance developer productivity by providing intelligent code suggestions and natural language interactions.""",
+            "content": """
+            You are CodeStar, an advanced AI-powered coding assistant designed to enhance
+            developer productivity by providing intelligent code suggestions and natural
+            language interactions.
+            """,
         }
     ]
 
-    async def receive_json(self, content: Dict[str, str], **kwargs) -> None:
+    async def receive_json(self, content: Dict[str, str] | None, **kwargs) -> None:
         """Receive JSON data from the websocket"""
+
+        # If data validation fails, stop execution
+        if content is None:
+            return
 
         # User's message
         message = content["message"]
@@ -31,29 +41,28 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # Send the message back
         await self.send_json({"user": message})
 
-        response = self.client.chat_completion(
-            messages=self.messages,
-            model="HuggingFaceH4/starchat2-15b-v0.1",
-            max_tokens=1024,
-        )
+        # This can be used as loading indicator
+        await self.send_json({"generating": True})
 
-        # LLM message
-        llm_message = response.choices[0].message.content
+        try:
+            response = self.client.chat_completion(
+                messages=self.messages,
+                model="HuggingFaceH4/starchat2-15b-v0.1",
+                max_tokens=1024,
+            )
 
-        # Add LLM message to chat history
-        self.messages.append({"role": "assistant", "content": llm_message})
+            # LLM message
+            llm_message = response.choices[0].message.content
 
-        # Send the message
-        await self.send_json({"response": llm_message})
+            # Add LLM message to chat history
+            self.messages.append({"role": "assistant", "content": str(llm_message)})
 
-    async def decode_json(self, text_data) -> Dict[str, str]:
-        """Decode and validate incoming data"""
+            # Send the message
+            await self.send_json({"generating": False, "response": llm_message})
 
-        # Convert to python
-        data = json.loads(text_data)
+        except Exception as error:
+            # Send error message
+            await self.send_json({"generating": False, "error": str(error)})
 
-        # Data validation
-        serializer = ChatSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-
-        return serializer.validated_data
+            # Close the connection
+            await self.close()

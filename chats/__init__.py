@@ -1,1 +1,1 @@
-""" CodeStar Chat """
+""" CodeStar Chats """

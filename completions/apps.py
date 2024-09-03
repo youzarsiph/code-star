@@ -3,9 +3,9 @@
 from django.apps import AppConfig
 
 
-# Create your AppConf here.
+# Create your AppConfig here.
 class CompletionsConfig(AppConfig):
-    """code_star.completions AppConf"""
+    """code_star.completions AppConfig"""
 
     name = "code_star.completions"
     default_auto_field = "django.db.models.BigAutoField"

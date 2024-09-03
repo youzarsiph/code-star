@@ -1,40 +1,43 @@
-""" Code completion consumers """
+""" CodeCompletion consumers """
 
-import json
 from typing import Dict
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from huggingface_hub import InferenceClient
+
 from code_star.completions.serializers import CompletionSerializer
+from code_star.mixins import SerializerValidationMixin
 
 
 # Create your consumers here.
-class CompletionConsumer(AsyncJsonWebsocketConsumer):
+class CompletionConsumer(SerializerValidationMixin, AsyncJsonWebsocketConsumer):
     """Code completion consumer"""
 
     client = InferenceClient()
+    serializer_class = CompletionSerializer
 
-    async def receive_json(self, content: Dict[str, str], **kwargs) -> None:
+    async def receive_json(self, content: Dict[str, str] | None, **kwargs) -> None:
         """Receive JSON data from the websocket"""
 
-        # Prompt
-        prompt = content["prompt"]
+        # If data validation fails, stop execution
+        if content is None:
+            return
 
-        response = self.client.text_generation(
-            prompt=prompt,
-            model="bigcode/starcoder2-15b",
-            max_new_tokens=512,
-        )
+        # This can be used as loading indicator
+        await self.send_json({"generating": True})
 
-        await self.send_json({"response": prompt + response})
+        try:
+            # Code completion
+            completion = self.client.text_generation(
+                prompt=content["prompt"],
+                model="bigcode/starcoder2-15b",
+                max_new_tokens=512,
+            )
 
-    async def decode_json(self, text_data) -> Dict[str, str]:
-        """Decode and validate incoming data"""
+            await self.send_json({"generating": False, "response": completion})
 
-        # Convert to python
-        data = json.loads(text_data)
+        except Exception as error:
+            # Send error message
+            await self.send_json({"generating": False, "error": str(error)})
 
-        # Data validation
-        serializer = CompletionSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-
-        return serializer.validated_data
+            # Close the connection
+            await self.close()

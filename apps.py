@@ -1,11 +1,11 @@
-""" App Configuration for code_star """
+""" CodeStar App Configuration """
 
 from django.apps import AppConfig
 
 
-# Create your AppConf here.
+# Create your AppConfig here.
 class CodeStarConfig(AppConfig):
-    """code_star AppConf"""
+    """CodeStar AppConfig"""
 
     name = "code_star"
     default_auto_field = "django.db.models.BigAutoField"

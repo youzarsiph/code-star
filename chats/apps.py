@@ -1,11 +1,11 @@
-""" App Configuration for code_star.chat """
+""" App Configuration for code_star.chats """
 
 from django.apps import AppConfig
 
 
-# Create your AppConf here.
-class ChatConfig(AppConfig):
-    """code_star.chat AppConf"""
+# Create your AppConfig here.
+class CodeStarChatsConfig(AppConfig):
+    """code_star.chats AppConfig"""
 
     name = "code_star.chats"
     default_auto_field = "django.db.models.BigAutoField"

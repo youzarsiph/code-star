@@ -1,4 +1,4 @@
-""" Serializers for code_star.chat """
+""" Serializers for code_star.chats """
 
 from rest_framework import serializers
 
