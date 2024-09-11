@@ -1,10 +1,10 @@
 """ Tests for code_star.chat.views """
 
-from django.test import TestCase
+from rest_framework.test import APITestCase
 
 
 # Create your view tests here.
-class ViewTests(TestCase):
-    """docstring"""
+class ChatViewTests(APITestCase):
+    """Tests for ChatViewSet"""
 
     pass

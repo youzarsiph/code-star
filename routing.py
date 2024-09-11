@@ -21,8 +21,8 @@ def app(application: ASGIHandler) -> ProtocolTypeRouter:
                 AuthMiddlewareStack(
                     URLRouter(
                         [
-                            path("chats/", ChatConsumer.as_asgi()),
-                            path("completions/", CompletionConsumer.as_asgi()),
+                            path("ws/chats/<int:pk>/", ChatConsumer.as_asgi()),
+                            path("ws/completions/", CompletionConsumer.as_asgi()),
                         ]
                     )
                 )
