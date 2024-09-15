@@ -25,7 +25,6 @@ class Chat(models.Model):
     description = models.CharField(
         max_length=512,
         db_index=True,
-        default="Untitled chat",
         help_text="Chat description",
     )
     created_at = models.DateTimeField(
