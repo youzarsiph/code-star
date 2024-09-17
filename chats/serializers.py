@@ -36,13 +36,3 @@ class ChatRetrieveSerializer(ChatSerializer):
 
         depth = 1
         fields = ChatSerializer.Meta.fields + ("messages",)
-
-
-class ChatMessageSerializer(serializers.Serializer):
-    """Serialize chat messages"""
-
-    message = serializers.CharField(
-        max_length=1000,
-        required=True,
-        allow_blank=False,
-    )

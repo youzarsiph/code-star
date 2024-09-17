@@ -1,14 +1,14 @@
 """ Chat consumers """
 
-from typing import Dict, List, Literal
+from typing import Any, Dict, List, Literal
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from huggingface_hub import AsyncInferenceClient
 
 from code_star.chats.models import Chat
-from code_star.chats.serializers import ChatMessageSerializer
 from code_star.consumers import SerializerValidationMixin
 from code_star.messages.models import Message
+from code_star.messages.serializers import ChatMessageSerializer
 
 
 # Create your consumers here.
@@ -57,15 +57,14 @@ class ChatConsumer(SerializerValidationMixin, AsyncJsonWebsocketConsumer):
             return
 
         # User's message
-        message = await self.create_message(role=True, content=content["message"])
+        message = await self.create_message(
+            role=True,
+            as_dict=True,
+            content=content["content"],
+        )
 
         # Send the message
-        await self.send_json(
-            {
-                "generating": message.role,
-                "data": message.content,
-            }
-        )
+        await self.send_json({"generating": True, "data": message})
 
         try:
             response = await self.client.chat_completion(
@@ -77,16 +76,12 @@ class ChatConsumer(SerializerValidationMixin, AsyncJsonWebsocketConsumer):
             # LLM message
             llm_message = await self.create_message(
                 role=False,
+                as_dict=True,
                 content=str(response.choices[0].message.content),
             )
 
             # Send the message
-            await self.send_json(
-                {
-                    "generating": llm_message.role,
-                    "data": llm_message.content,
-                }
-            )
+            await self.send_json({"generating": False, "data": llm_message})
 
         except Exception as error:
             # Send error message
@@ -96,7 +91,12 @@ class ChatConsumer(SerializerValidationMixin, AsyncJsonWebsocketConsumer):
             await self.close()
 
     @database_sync_to_async
-    def create_message(self, role: bool, content: str) -> Message:
+    def create_message(
+        self,
+        role: bool,
+        content: str,
+        as_dict: bool = False,
+    ) -> Message | Dict[str, Any]:
         """Create a message"""
 
         message = self.chat.messages.create(
@@ -112,6 +112,12 @@ class ChatConsumer(SerializerValidationMixin, AsyncJsonWebsocketConsumer):
                 "content": message.content,
             }
         )
+
+        if as_dict:
+            return self.get_serializer(
+                instance=message,
+                context={"request": self.scope},
+            ).data
 
         return message
 
