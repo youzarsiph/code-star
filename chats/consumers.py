@@ -15,7 +15,7 @@ from code_star.messages.serializers import ChatMessageSerializer
 class ChatConsumer(SerializerValidationMixin, AsyncJsonWebsocketConsumer):
     """Chat consumer"""
 
-    client = AsyncInferenceClient()
+    client = AsyncInferenceClient("HuggingFaceH4/starchat2-15b-v0.1")
     serializer_class = ChatMessageSerializer
     messages = [
         {
@@ -69,7 +69,6 @@ class ChatConsumer(SerializerValidationMixin, AsyncJsonWebsocketConsumer):
         try:
             response = await self.client.chat_completion(
                 messages=self.messages,
-                model="HuggingFaceH4/starchat2-15b-v0.1",
                 max_tokens=1024,
             )
 

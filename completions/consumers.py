@@ -12,7 +12,7 @@ from code_star.consumers import SerializerValidationMixin
 class CompletionConsumer(SerializerValidationMixin, AsyncJsonWebsocketConsumer):
     """Code completion consumer"""
 
-    client = AsyncInferenceClient()
+    client = AsyncInferenceClient("bigcode/starcoder2-15b")
     serializer_class = CompletionSerializer
 
     async def connect(self) -> None:
@@ -43,7 +43,6 @@ class CompletionConsumer(SerializerValidationMixin, AsyncJsonWebsocketConsumer):
             # Code completion
             completion = await self.client.text_generation(
                 prompt=prompt,
-                model="bigcode/starcoder2-15b",
                 max_new_tokens=512,
             )
 
